@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/struki84/dnbclient/api_response"
 )
 
 const (
@@ -48,8 +50,8 @@ func NewClient(apiToken string, options ...ClientOptions) (*Client, error) {
 	return client, nil
 }
 
-func (client *Client) SearchCriteria(ctx context.Context, options ...ClientOptions) (*CriteriaSearchResponse, error) {
-	searchResults := &CriteriaSearchResponse{}
+func (client *Client) SearchCriteria(ctx context.Context, options ...ClientOptions) (*api_response.CompanySearch, error) {
+	searchResults := &api_response.CompanySearch{}
 	client.RequestBody.CompanySearch = &CompanySearchRequest{}
 
 	client.loadOptions(options...)
@@ -78,8 +80,8 @@ func (client *Client) SearchCriteria(ctx context.Context, options ...ClientOptio
 	return searchResults, nil
 }
 
-func (client *Client) CompanyList(ctx context.Context, options ...ClientOptions) (*CompanyListResponse, error) {
-	searchResults := &CompanyListResponse{}
+func (client *Client) CompanyList(ctx context.Context, options ...ClientOptions) (*api_response.CompanySearch, error) {
+	searchResults := &api_response.CompanySearch{}
 	client.RequestBody.CompanySearch = &CompanySearchRequest{}
 
 	client.loadOptions(options...)

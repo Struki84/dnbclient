@@ -1,5 +1,9 @@
 package dnbclient
 
+type RequestBody struct {
+	CompanySearch *CompanySearchRequest
+}
+
 type CompanySearchRequest struct {
 	DUNS                    string   `json:"duns,omitempty"`
 	DUNSList                []string `json:"dunsList,omitempty"`
@@ -56,8 +60,4 @@ type CompanySearchRequest struct {
 		Description string   `json:"description,omitempty"`
 		Code        []string `json:"code,omitempty"`
 	} `json:"industryCodes,omitempty"`
-}
-
-type RequestBody struct {
-	CompanySearch *CompanySearchRequest
 }
