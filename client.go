@@ -50,7 +50,7 @@ func NewClient(apiToken string, options ...ClientOptions) (*Client, error) {
 	return client, nil
 }
 
-func (client *Client) SearchCriteria(ctx context.Context, options ...ClientOptions) (*api_response.CompanySearch, error) {
+func (client *Client) CriteriaSearch(ctx context.Context, options ...ClientOptions) (*api_response.CompanySearch, error) {
 	searchResults := &api_response.CompanySearch{}
 	client.RequestBody.CompanySearch = &CompanySearchRequest{}
 
@@ -80,7 +80,40 @@ func (client *Client) SearchCriteria(ctx context.Context, options ...ClientOptio
 	return searchResults, nil
 }
 
-func (client *Client) CompanyList(ctx context.Context, options ...ClientOptions) (*api_response.CompanySearch, error) {
+func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, countryCode string, ...ClientOptions) (*api_response.TypeheadSearch, error) {
+	searchResults := &api_response.TypeheadSearch{}
+
+	client.loadOptions(options...)
+
+	reqURL, err := url.Parse(client.BaseURL + TypeheadSearchURL)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}
+	
+	params := reqURL.Values()
+	params.Add("searchTerm", searchTerm)
+	params.Add("countryISOAlpha2Code", countryCode)
+	reqURL.RawQuery = params.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL.String(), nil)
+	
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}
+
+	responseBody, err := client.runRequest(req)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}	
+
+	err = json.Unmarshal(responseBody, searchResults)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}
+	return searchResults, nil
+}
+
+func (client *Client) CompanyListSearch(ctx context.Context, options ...ClientOptions) (*api_response.CompanySearch, error) {
 	searchResults := &api_response.CompanySearch{}
 	client.RequestBody.CompanySearch = &CompanySearchRequest{}
 

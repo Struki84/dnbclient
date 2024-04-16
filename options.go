@@ -21,7 +21,7 @@ func WithAPIKey(apiKey string) ClientOptions {
 	}
 }
 
-func WithCompanySerch(companySearch *CompanySearchRequest) ClientOptions {
+func WithCompanySerchRequest(companySearch *CompanySearchRequest) ClientOptions {
 	return func(client *Client) {
 		client.RequestBody.CompanySearch = companySearch
 	}
