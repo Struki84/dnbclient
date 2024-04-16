@@ -3,9 +3,11 @@ package dnbclient
 type CriteriaSearchResponse struct {
 }
 
+type TypeheadSearchResponse struct {
+}
+
 type CompanyListResponse struct {
 }
 
-type ErrorResponse struct {
-	Text string
+type ContactSearchResponse struct {
 }

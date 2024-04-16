@@ -8,20 +8,27 @@ func WithBaseURL(baseURL string) ClientOptions {
 	}
 }
 
+func WithCredentials(username string, password string) ClientOptions {
+	return func(client *Client) {
+		client.username = username
+		client.password = password
+	}
+}
+
 func WithAPIKey(apiKey string) ClientOptions {
 	return func(client *Client) {
 		client.apiToken = apiKey
 	}
 }
 
-func WithSearchCriteriaRequest(body *RequestBody) ClientOptions {
+func WithCompanySerch(companySearch *CompanySearchRequest) ClientOptions {
 	return func(client *Client) {
-		client.RequestBody = body
+		client.RequestBody.CompanySearch = companySearch
 	}
 }
 
-func WithCompanyListRequest(body *RequestBody) ClientOptions {
+func WithDUNS(duns string) ClientOptions {
 	return func(client *Client) {
-		client.RequestBody = body
+		client.RequestBody.CompanySearch.DUNS = duns
 	}
 }

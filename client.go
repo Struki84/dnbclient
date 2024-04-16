@@ -13,6 +13,7 @@ import (
 const (
 	DefaultBaseURL    = "https://plus.dnb.com/v1"
 	CriteriaSearchURL = "/search/criteria"
+	TypeheadSearchURL = "/search/typehead"
 	CompanyListURL    = "/search/companyList"
 )
 
@@ -25,6 +26,8 @@ var (
 )
 
 type Client struct {
+	username    string
+	password    string
 	apiToken    string
 	options     []ClientOptions
 	BaseURL     string
@@ -47,14 +50,11 @@ func NewClient(apiToken string, options ...ClientOptions) (*Client, error) {
 
 func (client *Client) SearchCriteria(ctx context.Context, options ...ClientOptions) (*CriteriaSearchResponse, error) {
 	searchResults := &CriteriaSearchResponse{}
-	client.RequestBody = &RequestBody{
-		SearchTerm: "test",
-		DUNS:       "123456789",
-	}
+	client.RequestBody.CompanySearch = &CompanySearchRequest{}
 
 	client.loadOptions(options...)
 
-	reqBytes, err := json.Marshal(client.RequestBody)
+	reqBytes, err := json.Marshal(client.RequestBody.CompanySearch)
 	if err != nil {
 		return searchResults, fmt.Errorf("%w: %w", ErrSearchCriteriaFailed, err)
 	}
@@ -65,7 +65,7 @@ func (client *Client) SearchCriteria(ctx context.Context, options ...ClientOptio
 		return searchResults, fmt.Errorf("%w: %w", ErrSearchCriteriaFailed, err)
 	}
 
-	responseBody, err := client.runRquest(req)
+	responseBody, err := client.runRequest(req)
 	if err != nil {
 		return searchResults, fmt.Errorf("%w: %w", ErrSearchCriteriaFailed, err)
 	}
@@ -80,14 +80,11 @@ func (client *Client) SearchCriteria(ctx context.Context, options ...ClientOptio
 
 func (client *Client) CompanyList(ctx context.Context, options ...ClientOptions) (*CompanyListResponse, error) {
 	searchResults := &CompanyListResponse{}
-	client.RequestBody = &RequestBody{
-		SearchTerm: "test",
-		DUNS:       "123456789",
-	}
+	client.RequestBody.CompanySearch = &CompanySearchRequest{}
 
 	client.loadOptions(options...)
 
-	reqBytes, err := json.Marshal(client.RequestBody)
+	reqBytes, err := json.Marshal(client.RequestBody.CompanySearch)
 	if err != nil {
 		return searchResults, fmt.Errorf("%w: %w", ErrCompanyListFailed, err)
 	}
@@ -98,7 +95,7 @@ func (client *Client) CompanyList(ctx context.Context, options ...ClientOptions)
 		return searchResults, fmt.Errorf("%w: %w", ErrCompanyListFailed, err)
 	}
 
-	responseBody, err := client.runRquest(req)
+	responseBody, err := client.runRequest(req)
 	if err != nil {
 		return searchResults, fmt.Errorf("%w: %w", ErrCompanyListFailed, err)
 	}
@@ -111,7 +108,7 @@ func (client *Client) CompanyList(ctx context.Context, options ...ClientOptions)
 	return searchResults, nil
 }
 
-func (client *Client) runRquest(req *http.Request) ([]byte, error) {
+func (client *Client) runRequest(req *http.Request) ([]byte, error) {
 
 	req.Header.Add("Authorization", "Bearer "+client.apiToken)
 	req.Header.Add("Content-Type", "application/json")
@@ -129,14 +126,7 @@ func (client *Client) runRquest(req *http.Request) ([]byte, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		errorResponse := &ErrorResponse{}
-		err := json.Unmarshal(body, &errorResponse)
-		if err != nil {
-			return nil, err
-		}
-		errorTxt := errorResponse.Text
-
-		return nil, fmt.Errorf("%w: %s", ErrRequestFailed, errorTxt)
+		return nil, fmt.Errorf("%w: %d", ErrRequestFailed, res.StatusCode)
 	}
 
 	return body, nil
