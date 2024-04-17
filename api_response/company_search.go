@@ -1,141 +1,133 @@
 package api_response
 
-import (
-	"time"
-)
-
 type CompanySearch struct {
-	TransactionDetail TransactionDetail `json:"transactionDetail"`
-	InquiryDetail     InquiryDetail     `json:"inquiryDetail"`
-	Candidates        []Candidate       `json:"searchCandidates"`
-	Navigators        Navigators        `json:"navigators"`
+	Base
+	InquiryDetail CompanyInquiryDetail `json:"inquiryDetail,omitempty"`
+	Navigators    Navigators           `json:"navigators,omitempty"`
+
+	Candidates []struct {
+		DisplaySequence int          `json:"displaySequence,omitempty"`
+		Organization    Organization `json:"organization,omitempty"`
+	} `json:"searchCandidates,omitempty"`
 }
 
-type TransactionDetail struct {
-	TransactionID        string    `json:"transactionID"`
-	TransactionTimestamp time.Time `json:"transactionTimestamp"`
-	InLanguage           string    `json:"inLanguage"`
-	ServiceVersion       string    `json:"serviceVersion"`
-}
+type CompanyInquiryDetail struct {
+	IsExporter              bool     `json:"isExporter,omitempty"`
+	TelephoneNumber         string   `json:"telephoneNumber,omitempty"`
+	PageNumber              int      `json:"pageNumber,omitempty"`
+	PostalCode              string   `json:"postalCode,omitempty"`
+	DunsList                []string `json:"dunsList,omitempty"`
+	PageSize                int      `json:"pageSize,omitempty"`
+	CountryISOCode          string   `json:"countryISOAlpha2Code,omitempty"`
+	SearchTerm              string   `json:"searchTerm,omitempty"`
+	ReturnNavigators        bool     `json:"returnNavigators,omitempty"`
+	USSicV4                 []string `json:"usSicV4,omitempty"`
+	IsOutOfBusiness         bool     `json:"isOutOfBusiness,omitempty"`
+	IsImporter              bool     `json:"isImporter,omitempty"`
+	IsStandalone            bool     `json:"isStandalone,omitempty"`
+	IsTelephoneDisconnected bool     `json:"isTelephoneDisconnected,omitempty"`
+	TradeStyleName          string   `json:"tradeStyleName,omitempty"`
+	FamilyTreeRoles         []int    `json:"familytreeRolesPlayed,omitempty"`
+	AddressLocality         string   `json:"addressLocality,omitempty"`
+	AddressRegion           string   `json:"addressRegion,omitempty"`
+	IsMailUndeliverable     bool     `json:"isMailUndeliverable,omitempty"`
+	IsMarketable            bool     `json:"isMarketable,omitempty"`
+	BusinessEntityType      []int    `json:"businessEntityType,omitempty"`
+	PrimaryName             string   `json:"primaryName,omitempty"`
+	RegistrationNumbers     []string `json:"registrationNumbers,omitempty"`
+	TickerSymbol            string   `json:"tickerSymbol,omitempty"`
+	StreetAddress           string   `json:"streetAddressLine1,omitempty"`
+	Domain                  string   `json:"domain,omitempty"`
 
-type InquiryDetail struct {
-	IsExporter                           bool            `json:"isExporter"`
-	TelephoneNumber                      string          `json:"telephoneNumber"`
-	PageNumber                           int             `json:"pageNumber"`
-	YearlyRevenue                        Revenue         `json:"yearlyRevenue"`
-	PostalCode                           string          `json:"postalCode"`
-	DunsList                             []string        `json:"dunsList"`
-	PageSize                             int             `json:"pageSize"`
-	IndustryCodes                        []IndustryCode  `json:"industryCodes"`
-	CountryISOCode                       string          `json:"countryISOAlpha2Code"`
-	SearchTerm                           string          `json:"searchTerm"`
-	ReturnNavigators                     bool            `json:"returnNavigators"`
-	USSicV4                              []string        `json:"usSicV4"`
-	IsOutOfBusiness                      bool            `json:"isOutOfBusiness"`
-	IsImporter                           bool            `json:"isImporter"`
-	IsStandalone                         bool            `json:"isStandalone"`
-	IsTelephoneDisconnected              bool            `json:"isTelephoneDisconnected"`
-	TradeStyleName                       string          `json:"tradeStyleName"`
-	FamilyTreeRoles                      []int           `json:"familytreeRolesPlayed"`
-	AddressLocality                      string          `json:"addressLocality"`
-	AddressRegion                        string          `json:"addressRegion"`
-	IsMailUndeliverable                  bool            `json:"isMailUndeliverable"`
-	IsMarketable                         bool            `json:"isMarketable"`
-	BusinessEntityType                   []int           `json:"businessEntityType"`
-	PrimaryName                          string          `json:"primaryName"`
-	RegistrationNumbers                  []string        `json:"registrationNumbers"`
-	TickerSymbol                         string          `json:"tickerSymbol"`
-	Sort                                 []SortCriteria  `json:"sort"`
-	StreetAddress                        string          `json:"streetAddressLine1"`
-	NumberOfEmployees                    EmployeeNumbers `json:"numberOfEmployees"`
-	LocationRadius                       LocationRadius  `json:"locationRadius"`
-	GlobalUltimateFamilyTreeMembersCount Range           `json:"globalUltimateFamilyTreeMembersCount"`
-	Domain                               string          `json:"domain"`
-}
+	IndustryCodes []struct {
+		Code        string `json:"code"`
+		Description string `json:"description"`
+		TypeDnbCode string `json:"typeDnbCode"`
+	} `json:"industryCodes"`
 
-type Revenue struct {
-	Amount   float64 `json:"amount"`
-	Currency string  `json:"currency"`
-}
+	Sort []struct {
+		Field     string `json:"field"`
+		Direction string `json:"direction"`
+	} `json:"sort"`
 
-type IndustryCode struct {
-	Code        string `json:"code"`
-	Description string `json:"description"`
-	Type        string `json:"type"`
-}
+	NumberOfEmployees struct {
+		Value int `json:"value"`
+	} `json:"numberOfEmployees"`
 
-type SortCriteria struct {
-	Field     string `json:"field"`
-	Direction string `json:"direction"`
-}
+	LocationRadius struct {
+		Radius float64 `json:"radius"`
+		Unit   string  `json:"unit"`
+	} `json:"locationRadius"`
 
-type EmployeeNumbers struct {
-	Type  string `json:"type"`
-	Value int    `json:"value"`
-}
+	GlobalUltimateFamilyTreeMembersCount struct {
+		Minimum int `json:"minimum"`
+		Maximum int `json:"maximum"`
+	} `json:"globalUltimateFamilyTreeMembersCount"`
 
-type LocationRadius struct {
-	Radius float64 `json:"radius"`
-	Unit   string  `json:"unit"`
-}
-
-type Range struct {
-	Minimum int `json:"minimum"`
-	Maximum int `json:"maximum"`
-}
-
-type Candidate struct {
-	DisplaySequence int          `json:"displaySequence"`
-	Organization    Organization `json:"organization"`
+	YearlyRevenue struct {
+		Amount   float64 `json:"amount,omitempty"`
+		Currency string  `json:"currency,omitempty"`
+	} `json:"yearlyRevenue,omitempty"`
 }
 
 type Organization struct {
-	Duns                 string             `json:"duns"`
-	DunsControlStatus    DunsControlStatus  `json:"dunsControlStatus"`
-	PrimaryName          string             `json:"primaryName"`
-	PrimaryAddress       PrimaryAddress     `json:"primaryAddress"`
-	PrimaryIndustryCodes []IndustryCode     `json:"primaryIndustryCodes"`
-	CorporateLinkage     CorporateLinkage   `json:"corporateLinkage"`
-	Financials           []Financial        `json:"financials"`
-	NumberOfEmployees    []EmployeeNumbers  `json:"numberOfEmployees"`
-	IndustryCodes        []IndustryCode     `json:"industryCodes"`
-	Telephone            []Telephone        `json:"telephone"`
-	BusinessEntityType   BusinessEntityType `json:"businessEntityType"`
-	IsStandalone         bool               `json:"isStandalone"`
-}
+	Duns         string `json:"duns"`
+	IsStandalone bool   `json:"isStandalone"`
+	PrimaryName  string `json:"primaryName"`
 
-type DunsControlStatus struct {
-	OperatingStatus string `json:"operatingStatus"`
-	IsOutOfBusiness bool   `json:"isOutOfBusiness"`
-}
+	DunsControlStatus struct {
+		OperatingStatus string `json:"operatingStatus"`
+		IsOutOfBusiness bool   `json:"isOutOfBusiness"`
+	} `json:"dunsControlStatus"`
 
-type PrimaryAddress struct {
-	StreetAddress string `json:"streetAddress"`
-	City          string `json:"city"`
-	State         string `json:"state"`
-	Country       string `json:"country"`
-	PostalCode    string `json:"postalCode"`
-}
+	PrimaryAddress struct {
+		StreetAddress string `json:"streetAddress"`
+		City          string `json:"city"`
+		State         string `json:"state"`
+		Country       string `json:"country"`
+		PostalCode    string `json:"postalCode"`
+	} `json:"primaryAddress"`
 
-type CorporateLinkage struct {
-	GlobalUltimateDuns string `json:"globalUltimateDuns"`
-	ParentDuns         string `json:"parentDuns"`
-}
+	CorporateLinkage struct {
+		GlobalUltimateDuns string `json:"globalUltimateDuns"`
+		ParentDuns         string `json:"parentDuns"`
+	} `json:"corporateLinkage"`
 
-type Financial struct {
-	Year     int     `json:"year"`
-	Revenue  Revenue `json:"revenue"`
-	Currency string  `json:"currency"`
-}
+	BusinessEntityType struct {
+		Code        string `json:"code"`
+		Description string `json:"description"`
+	} `json:"businessEntityType"`
 
-type Telephone struct {
-	Type   string `json:"type"`
-	Number string `json:"number"`
-}
+	Financials []struct {
+		Year          int `json:"year"`
+		YearlyRevenue struct {
+			Value    float64 `json:"value"`
+			Currency string  `json:"currency"`
+		} `json:"yearlyRevenue"`
+	} `json:"financials"`
 
-type BusinessEntityType struct {
-	Code        string `json:"code"`
-	Description string `json:"description"`
+	PrimaryIndustryCodes []struct {
+		Code            []string `json:"code,omitempty"`
+		Description     []string `json:"description,omitempty"`
+		TypeDescription string   `json:"typeDescription,omitempty"`
+		TypeDnbCode     int      `json:"typeDnbCode,omitempty"`
+	} `json:"primaryIndustryCodes,omitempty"`
+
+	NumberOfEmployees []struct {
+		Value int `json:"value"`
+	} `json:"numberOfEmployees"`
+
+	IndustryCodes []struct {
+		Code            []string `json:"code,omitempty"`
+		Description     []string `json:"description,omitempty"`
+		TypeDescription string   `json:"typeDescription,omitempty"`
+		TypeDnbCode     int      `json:"typeDnbCode,omitempty"`
+	} `json:"industryCodes,omitempty"`
+
+	Telephone []struct {
+		Type   string `json:"type"`
+		Number string `json:"number"`
+	} `json:"telephone"`
 }
 
 type Navigators struct {
@@ -144,16 +136,14 @@ type Navigators struct {
 	Industry           []Navigator `json:"industry"`
 	BusinessEntityType []Navigator `json:"businessEntityType"`
 	FamilyTreeRole     []Navigator `json:"familyTreeRole"`
-	Location           Location    `json:"location"`
+	Location           struct {
+		Country []Navigator `json:"country"`
+		State   []Navigator `json:"state"`
+		City    []Navigator `json:"city"`
+	} `json:"location"`
 }
 
 type Navigator struct {
 	Name  string `json:"name"`
 	Count int    `json:"count"`
-}
-
-type Location struct {
-	Country []Navigator `json:"country"`
-	State   []Navigator `json:"state"`
-	City    []Navigator `json:"city"`
 }

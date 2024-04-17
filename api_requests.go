@@ -2,8 +2,10 @@ package dnbclient
 
 type RequestBody struct {
 	CompanySearch *CompanySearchRequest
+	ContactSearch *ContactSearchRequest
 }
 
+// Company Search Request
 type CompanySearchRequest struct {
 	DUNS                    string   `json:"duns,omitempty"`
 	DUNSList                []string `json:"dunsList,omitempty"`
@@ -60,4 +62,39 @@ type CompanySearchRequest struct {
 		Description string   `json:"description,omitempty"`
 		Code        []string `json:"code,omitempty"`
 	} `json:"industryCodes,omitempty"`
+}
+
+// Contact Search Request
+type ContactSearchRequest struct {
+	ContactID            string         `json:"contactID,omitempty"`
+	ContactEmail         string         `json:"contactEmail,omitempty"`
+	GivenName            string         `json:"givenName,omitempty"`
+	FamilyName           string         `json:"familyName,omitempty"`
+	JobTitles            []string       `json:"jobTitles,omitempty"`
+	Duns                 string         `json:"duns,omitempty"`
+	PrimaryName          string         `json:"primaryName,omitempty"`
+	AddressLocality      string         `json:"addressLocality,omitempty"`
+	AddressRegion        string         `json:"addressRegion,omitempty"`
+	PostalCode           string         `json:"postalCode,omitempty"`
+	CountryISOAlpha2Code string         `json:"countryISOAlpha2Code,omitempty"`
+	UsSicV4              []string       `json:"usSicV4,omitempty"`
+	MrcCode              []string       `json:"mrcCode,omitempty"`
+	View                 string         `json:"view,omitempty"`
+	HasDirectDial        bool           `json:"hasDirectDial,omitempty"`
+	IndustryCodes        []IndustryCode `json:"industryCodes,omitempty"`
+	ReturnNavigators     bool           `json:"returnNavigators,omitempty"`
+	PageNumber           int            `json:"pageNumber,omitempty"`
+	PageSize             int            `json:"pageSize,omitempty"`
+	Sort                 []SortItem     `json:"sort,omitempty"`
+}
+
+type IndustryCode struct {
+	TypeDnbCode int      `json:"typeDnbCode,omitempty"`
+	Description []string `json:"description,omitempty"`
+	Code        []string `json:"code,omitempty"`
+}
+
+type SortItem struct {
+	Item      string `json:"item,omitempty"`
+	Direction string `json:"direction,omitempty"`
 }

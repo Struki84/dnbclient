@@ -96,7 +96,6 @@ func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, cou
 	reqURL.RawQuery = params.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL.String(), nil)
-	
 	if err != nil {
 		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
 	}
@@ -110,6 +109,7 @@ func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, cou
 	if err != nil {
 		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
 	}
+	
 	return searchResults, nil
 }
 
@@ -140,6 +140,41 @@ func (client *Client) CompanyListSearch(ctx context.Context, options ...ClientOp
 		return searchResults, fmt.Errorf("%w: %w", ErrCompanyListFailed, err)
 	}
 
+	return searchResults, nil
+}
+
+func (client *Client) GetContact() {}
+
+func (client *Client) SearchContact(ctx context.Context, email string, options ...ClientOptions) (*api_response.ContactSearch, error) {
+	searchResults := &api_response.ContactSearch{}
+
+	client.loadOptions(options...)
+
+	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}
+
+	params := reqURL.Query()
+	params.Add("contactEmail", email)
+
+	reqURL.RawQuery = params.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL.String(), nil)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w, %w", ErrNoSearchResults, err)
+	}
+
+	responseBody, err := client.runRequest(req)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w, %w", ErrNoSearchResults, err)
+	}
+
+	err = json.Unmarshal(responseBody, searchResults)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w, %w", ErrNoSearchResults, err)
+	}
+	
 	return searchResults, nil
 }
 
