@@ -4,7 +4,7 @@ package api_response
 type ContactSearch struct {
 	Base
 	InquiryDetail ContactInquiryDetail `json:"inquiryDetail,omitempty"`
-	Links         Links                `json:"links,omitempty"`
+	Links         CompanyLinks         `json:"links,omitempty"`
 
 	Candidates []struct {
 		DisplaySequence int     `json:"displaySequence,omitempty"`
@@ -61,7 +61,7 @@ type ContactInquiryDetail struct {
 	} `json:"industryCodes,omitempty"`
 }
 
-type Links struct {
+type CompanyLinks struct {
 	Last  string `json:"last,omitempty"`
 	Self  string `json:"self,omitempty"`
 	First string `json:"first,omitempty"`

@@ -3,7 +3,7 @@ package api_response
 type CompanySearch struct {
 	Base
 	InquiryDetail CompanyInquiryDetail `json:"inquiryDetail,omitempty"`
-	Navigators    Navigators           `json:"navigators,omitempty"`
+	Navigators    CompanyNavigators    `json:"navigators,omitempty"`
 
 	Candidates []struct {
 		DisplaySequence int          `json:"displaySequence,omitempty"`
@@ -130,20 +130,20 @@ type Organization struct {
 	} `json:"telephone"`
 }
 
-type Navigators struct {
-	YearlyRevenue      []Navigator `json:"yearlyRevenue"`
-	NumberOfEmployees  []Navigator `json:"numberOfEmployees"`
-	Industry           []Navigator `json:"industry"`
-	BusinessEntityType []Navigator `json:"businessEntityType"`
-	FamilyTreeRole     []Navigator `json:"familyTreeRole"`
+type CompanyNavigators struct {
+	YearlyRevenue      []CompanyNavigator `json:"yearlyRevenue"`
+	NumberOfEmployees  []CompanyNavigator `json:"numberOfEmployees"`
+	Industry           []CompanyNavigator `json:"industry"`
+	BusinessEntityType []CompanyNavigator `json:"businessEntityType"`
+	FamilyTreeRole     []CompanyNavigator `json:"familyTreeRole"`
 	Location           struct {
-		Country []Navigator `json:"country"`
-		State   []Navigator `json:"state"`
-		City    []Navigator `json:"city"`
+		Country []CompanyNavigator `json:"country"`
+		State   []CompanyNavigator `json:"state"`
+		City    []CompanyNavigator `json:"city"`
 	} `json:"location"`
 }
 
-type Navigator struct {
+type CompanyNavigator struct {
 	Name  string `json:"name"`
 	Count int    `json:"count"`
 }

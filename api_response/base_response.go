@@ -12,3 +12,8 @@ type TransactionDetail struct {
 	InLanguage           string `json:"inLanguage,omitempty"`
 	ServiceVersion       string `json:"serviceVersion,omitempty"`
 }
+
+type ErrorResponse struct {
+	ErrorCode    string `json:"errorCode,omitempty"`
+	ErrorMessage string `json:"errorMessage,omitempty"`
+}
