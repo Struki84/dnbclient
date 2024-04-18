@@ -3,6 +3,7 @@ package dnbclient
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 
 const (
 	DefaultBaseURL    = "https://plus.dnb.com/v1"
+	AuthURL           = "/token"
 	CriteriaSearchURL = "/search/criteria"
 	TypeheadSearchURL = "/search/typehead"
 	CompanyListURL    = "/search/companyList"
@@ -23,9 +25,13 @@ const (
 
 var (
 	ErrMissingAPIKey        = errors.New("api token is required")
-	ErrRequestFailed        = errors.New("request failed with error")
+	ErrGetTokenFailed       = errors.New("get token failed with error")
+	ErrRequestFailed        = errors.New("http request failed with error")
 	ErrSearchCriteriaFailed = errors.New("search criteria failed with error")
 	ErrCompanyListFailed    = errors.New("company list search failed with error")
+	ErrTypeheadSearchFailed = errors.New("typehead search failed with error")
+	ErrContactSearchFailed  = errors.New("contact search failed with error")
+	ErrGetContactsFailed    = errors.New("get contacts failed with error")
 	ErrNoSearchResults      = errors.New("no search results found")
 )
 
@@ -50,6 +56,47 @@ func NewClient(apiToken string, options ...ClientOptions) (*Client, error) {
 	}
 
 	return client, nil
+}
+
+func (client *Client) GetToken(ctx context.Context, options ...ClientOptions) (string, error) {
+	var reqData struct {
+		GrantType string `json:"grant_type"`
+	}
+	reqData.GrantType = "client_credentials"
+
+	client.loadOptions(options...)
+
+	credentials := client.username + ":" + client.password
+	client.apiToken = base64.StdEncoding.EncodeToString([]byte(credentials))
+
+	reqBytes, err := json.Marshal(reqData)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrGetTokenFailed, err)
+	}
+
+	reqURL := client.BaseURL + AuthURL
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewBuffer(reqBytes))
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrGetTokenFailed, err)
+	}
+
+	responseBody, err := client.runRequest(req)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrGetTokenFailed, err)
+	}
+
+	var reponseData struct {
+		AccessToken string `json:"access_token"`
+		TokenType   string `json:"token_type"`
+		ExpiresIn   int    `json:"expires_in"`
+	}
+
+	err = json.Unmarshal(responseBody, &reponseData)
+	if err != nil {
+		return "", fmt.Errorf("%w: %w", ErrGetTokenFailed, err)
+	}
+
+	return reponseData.AccessToken, nil
 }
 
 func (client *Client) CriteriaSearch(ctx context.Context, options ...ClientOptions) (*api_response.CompanySearch, error) {
@@ -89,7 +136,7 @@ func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, cou
 
 	reqURL, err := url.Parse(client.BaseURL + TypeheadSearchURL)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrTypeheadSearchFailed, err)
 	}
 
 	params := reqURL.Query()
@@ -99,17 +146,17 @@ func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, cou
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL.String(), nil)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrTypeheadSearchFailed, err)
 	}
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrTypeheadSearchFailed, err)
 	}
 
 	err = json.Unmarshal(responseBody, searchResults)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrTypeheadSearchFailed, err)
 	}
 
 	return searchResults, nil
@@ -153,23 +200,23 @@ func (client *Client) SearchContact(ctx context.Context, options ...ClientOption
 
 	reqBytes, err := json.Marshal(client.RequestBody.ContactSearch)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrContactSearchFailed, err)
 	}
 
 	reqUrl := client.BaseURL + ContactSearchURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqUrl, bytes.NewBuffer(reqBytes))
 	if err != nil {
-		return searchResults, fmt.Errorf("%w, %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrContactSearchFailed, err)
 	}
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w, %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrContactSearchFailed, err)
 	}
 
 	err = json.Unmarshal(responseBody, searchResults)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w, %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrContactSearchFailed, err)
 	}
 
 	return searchResults, nil
@@ -182,7 +229,7 @@ func (client *Client) GetContactByID(ctx context.Context, contactID string, opti
 
 	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
 	}
 
 	params := reqURL.Query()
@@ -199,7 +246,7 @@ func (client *Client) GetContactByEmail(ctx context.Context, email string, optio
 
 	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
 	}
 
 	params := reqURL.Query()
@@ -216,7 +263,7 @@ func (client *Client) GetcontactByDUNS(ctx context.Context, duns string, options
 
 	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
 	}
 
 	params := reqURL.Query()
@@ -231,17 +278,17 @@ func (client *Client) getContact(ctx context.Context, reqURl *url.URL) (*api_res
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURl.String(), nil)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
 	}
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
 	}
 
 	err = json.Unmarshal(responseBody, searchResults)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
 	}
 
 	return searchResults, nil
@@ -265,7 +312,14 @@ func (client *Client) runRequest(req *http.Request) ([]byte, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%w: %d", ErrRequestFailed, res.StatusCode)
+		errorResponse := &api_response.ErrorResponse{}
+
+		err = json.Unmarshal(body, errorResponse)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %d", ErrRequestFailed, res.StatusCode)
+		}
+
+		return nil, fmt.Errorf("%w: %s", ErrRequestFailed, errorResponse.ErrorMessage)
 	}
 
 	return body, nil

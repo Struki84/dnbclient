@@ -14,6 +14,8 @@ type TransactionDetail struct {
 }
 
 type ErrorResponse struct {
-	ErrorCode    string `json:"errorCode,omitempty"`
-	ErrorMessage string `json:"errorMessage,omitempty"`
+	Error            string `json:"error,omitempty"`
+	ErrorDescription string `json:"error_description,omitempty"`
+	ErrorCode        string `json:"errorCode,omitempty"`
+	ErrorMessage     string `json:"errorMessage,omitempty"`
 }
