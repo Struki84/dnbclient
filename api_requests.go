@@ -64,6 +64,27 @@ type CompanySearchRequest struct {
 	} `json:"industryCodes,omitempty"`
 }
 
+// Typehead Search Request
+type TypeheadSearchRequest struct {
+	SearchTerm               string  `json:"searchTerm"`
+	CountryISOAlpha2Code     string  `json:"countryISOAlpha2Code,omitempty"`
+	IsOutOfBusiness          bool    `json:"isOutOfBusiness,omitempty"`
+	IsMarketable             bool    `json:"isMarketable,omitempty"`
+	IsDelisted               bool    `json:"isDelisted"`
+	IsMailUndeliverable      bool    `json:"isMailUndeliverable,omitempty"`
+	AddressLocality          string  `json:"addressLocality,omitempty"`
+	AddressRegion            string  `json:"addressRegion,omitempty"`
+	StreetAddressLine1       string  `json:"streetAddressLine1,omitempty"`
+	PostalCode               string  `json:"postalCode,omitempty"`
+	RadiusLat                float64 `json:"radiusLat,omitempty"`
+	RadiusLon                float64 `json:"radiusLon,omitempty"`
+	RadiusPostalCode         string  `json:"radiusPostalCode,omitempty"`
+	RadiusDistance           float64 `json:"radiusDistance,omitempty"`
+	RadiusUnit               string  `json:"radiusUnit,omitempty"`
+	CandidateMaximumQuantity int     `json:"candidateMaximumQuantity,omitempty"`
+	CustomerReference        string  `json:"customerReference,omitempty"`
+}
+
 // Contact Search Request
 type ContactSearchRequest struct {
 	ContactID            string         `json:"contactID,omitempty"`

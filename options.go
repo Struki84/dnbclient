@@ -27,6 +27,12 @@ func WithCompanySerchRequest(companySearch *CompanySearchRequest) ClientOptions 
 	}
 }
 
+func WithContactSearchRequest(contactSearch *ContactSearchRequest) ClientOptions {
+	return func(client *Client) {
+		client.RequestBody.ContactSearch = contactSearch
+	}
+}
+
 func WithDUNS(duns string) ClientOptions {
 	return func(client *Client) {
 		client.RequestBody.CompanySearch.DUNS = duns

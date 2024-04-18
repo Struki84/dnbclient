@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/struki84/dnbclient/api_response"
 )
@@ -17,6 +18,7 @@ const (
 	CriteriaSearchURL = "/search/criteria"
 	TypeheadSearchURL = "/search/typehead"
 	CompanyListURL    = "/search/companyList"
+	ContactSearchURL  = "/search/contact"
 )
 
 var (
@@ -80,7 +82,7 @@ func (client *Client) CriteriaSearch(ctx context.Context, options ...ClientOptio
 	return searchResults, nil
 }
 
-func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, countryCode string, ...ClientOptions) (*api_response.TypeheadSearch, error) {
+func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, countryCode string, options ...ClientOptions) (*api_response.TypeheadSearch, error) {
 	searchResults := &api_response.TypeheadSearch{}
 
 	client.loadOptions(options...)
@@ -89,8 +91,8 @@ func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, cou
 	if err != nil {
 		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
 	}
-	
-	params := reqURL.Values()
+
+	params := reqURL.Query()
 	params.Add("searchTerm", searchTerm)
 	params.Add("countryISOAlpha2Code", countryCode)
 	reqURL.RawQuery = params.Encode()
@@ -103,13 +105,13 @@ func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, cou
 	responseBody, err := client.runRequest(req)
 	if err != nil {
 		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
-	}	
+	}
 
 	err = json.Unmarshal(responseBody, searchResults)
 	if err != nil {
 		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
 	}
-	
+
 	return searchResults, nil
 }
 
@@ -143,24 +145,19 @@ func (client *Client) CompanyListSearch(ctx context.Context, options ...ClientOp
 	return searchResults, nil
 }
 
-func (client *Client) GetContact() {}
-
-func (client *Client) SearchContact(ctx context.Context, email string, options ...ClientOptions) (*api_response.ContactSearch, error) {
+func (client *Client) SearchContact(ctx context.Context, options ...ClientOptions) (*api_response.ContactSearch, error) {
 	searchResults := &api_response.ContactSearch{}
+	client.RequestBody.ContactSearch = &ContactSearchRequest{}
 
 	client.loadOptions(options...)
 
-	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
+	reqBytes, err := json.Marshal(client.RequestBody.ContactSearch)
 	if err != nil {
 		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
 	}
 
-	params := reqURL.Query()
-	params.Add("contactEmail", email)
-
-	reqURL.RawQuery = params.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL.String(), nil)
+	reqUrl := client.BaseURL + ContactSearchURL
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqUrl, bytes.NewBuffer(reqBytes))
 	if err != nil {
 		return searchResults, fmt.Errorf("%w, %w", ErrNoSearchResults, err)
 	}
@@ -174,7 +171,79 @@ func (client *Client) SearchContact(ctx context.Context, email string, options .
 	if err != nil {
 		return searchResults, fmt.Errorf("%w, %w", ErrNoSearchResults, err)
 	}
-	
+
+	return searchResults, nil
+}
+
+func (client *Client) GetContactByID(ctx context.Context, contactID string, options ...ClientOptions) (*api_response.ContactSearch, error) {
+	searchResults := &api_response.ContactSearch{}
+
+	client.loadOptions(options...)
+
+	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}
+
+	params := reqURL.Query()
+	params.Add("contactID", contactID)
+	reqURL.RawQuery = params.Encode()
+
+	return client.getContact(ctx, reqURL)
+}
+
+func (client *Client) GetContactByEmail(ctx context.Context, email string, options ...ClientOptions) (*api_response.ContactSearch, error) {
+	searchResults := &api_response.ContactSearch{}
+
+	client.loadOptions(options...)
+
+	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}
+
+	params := reqURL.Query()
+	params.Add("contactEmail", email)
+	reqURL.RawQuery = params.Encode()
+
+	return client.getContact(ctx, reqURL)
+}
+
+func (client *Client) GetcontactByDUNS(ctx context.Context, duns string, options ...ClientOptions) (*api_response.ContactSearch, error) {
+	searchResults := &api_response.ContactSearch{}
+
+	client.loadOptions(options...)
+
+	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}
+
+	params := reqURL.Query()
+	params.Add("duns", duns)
+	reqURL.RawQuery = params.Encode()
+
+	return client.getContact(ctx, reqURL)
+}
+
+func (client *Client) getContact(ctx context.Context, reqURl *url.URL) (*api_response.ContactSearch, error) {
+	searchResults := &api_response.ContactSearch{}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURl.String(), nil)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}
+
+	responseBody, err := client.runRequest(req)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}
+
+	err = json.Unmarshal(responseBody, searchResults)
+	if err != nil {
+		return searchResults, fmt.Errorf("%w: %w", ErrNoSearchResults, err)
+	}
+
 	return searchResults, nil
 }
 
