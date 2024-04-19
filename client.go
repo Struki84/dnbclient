@@ -15,12 +15,29 @@ import (
 )
 
 const (
-	DefaultBaseURL    = "https://plus.dnb.com/v1"
-	AuthURL           = "/token"
+
+	// API ENDPOINTS
+
+	// V1 Base API url
+	BaseURLV1 = "https://plus.dnb.com/v1"
+
+	// V2 base API url
+	BaseURLV3 = "https://plus.dnb.com/v3"
+
+	//Authorization endpoint for generating API token
+	AuthURL = "/token"
+
+	// Crteria compant search endpoint
 	CriteriaSearchURL = "/search/criteria"
+
+	// Typehead company search endpoint
 	TypeheadSearchURL = "/search/typehead"
-	CompanyListURL    = "/search/companyList"
-	ContactSearchURL  = "/search/contact"
+
+	// Company list search endpoint
+	CompanyListURL = "/search/companyList"
+
+	// Contact search endpoint
+	ContactSearchURL = "/search/contact"
 )
 
 var (
@@ -44,20 +61,36 @@ type Client struct {
 	RequestBody *RequestBody
 }
 
-func NewClient(apiToken string, options ...ClientOptions) (*Client, error) {
-	if apiToken == "" {
-		return nil, ErrMissingAPIKey
-	}
-
+// NewClient creates a new DNB client
+//
+// Parameters
+// - options: allows ihntial configuration of the client
+//
+// Returns
+// - client: DNB client
+// - error: error if any
+func NewClient(options ...ClientOptions) (*Client, error) {
 	client := &Client{
-		apiToken:    apiToken,
-		BaseURL:     DefaultBaseURL,
+		BaseURL:     BaseURLV1,
 		RequestBody: &RequestBody{},
 	}
 
 	return client, nil
 }
 
+// GetToken generates API token, requires DNB username and password
+// to generate token.
+//
+// parameters
+// - ctx
+// - options: allows passing username and password in the function
+//
+// Returns
+// - token: API token string used in all consequent API requests
+// - error: error if any
+//
+// Documentation
+// - https://directplus.documentation.dnb.com/openAPI.html?apiID=authenticationV3
 func (client *Client) GetToken(ctx context.Context, options ...ClientOptions) (string, error) {
 	var reqData struct {
 		GrantType string `json:"grant_type"`
@@ -99,6 +132,19 @@ func (client *Client) GetToken(ctx context.Context, options ...ClientOptions) (s
 	return reponseData.AccessToken, nil
 }
 
+// Criteria Search Locates possible entities from the Dun & Bradstreet Data Cloud using
+// specified criteria when there is not enough known data for a Match, allowing a maximum of 1000 results.
+//
+// Parameters
+// - ctx
+// - options: allows configuring the search
+//
+// Returns
+// - CompanyResults: company search results
+// - error: error if any
+//
+// Documentation
+// - https://directplus.documentation.dnb.com/openAPI.html?apiID=searchCriteria
 func (client *Client) CriteriaSearch(ctx context.Context, options ...ClientOptions) (*api_response.CompanySearch, error) {
 	searchResults := &api_response.CompanySearch{}
 	client.RequestBody.CompanySearch = &CompanySearchRequest{}
@@ -129,6 +175,23 @@ func (client *Client) CriteriaSearch(ctx context.Context, options ...ClientOptio
 	return searchResults, nil
 }
 
+// Tyoehead Search enables users to quickly find company records without
+// having to type the entire company information in the search request.
+//
+// Parameters
+//   - ctx
+//   - options: allows configuring the search
+//   - searchTerm: 2 to 30 characters used to find entities by its primary name or
+//     one of its tradestyle names.
+//   - countrCode: The 2-letter country/market code defined by the International Organization
+//     for Standardization (ISO) ISO 3166-1 scheme identifying the country of the entity.
+//
+// Returns
+// - TypeheadSearch: Typehead search company results
+// - error: error if any
+//
+// Documentation
+// - https://directplus.documentation.dnb.com/openAPI.html?apiID=searchTypeahead
 func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, countryCode string, options ...ClientOptions) (*api_response.TypeheadSearch, error) {
 	searchResults := &api_response.TypeheadSearch{}
 
@@ -162,6 +225,19 @@ func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, cou
 	return searchResults, nil
 }
 
+// Company Lisnt Search identifies the entities from the data source that match all
+// the specified criteria, allowing a maximum of 10000 results.
+//
+// Parameters
+// - ctx
+// - options: allows configuring the search
+//
+// Returns
+// - CompanySearch: company list search results
+// - error: error if any
+//
+// Documentation
+// - https://directplus.documentation.dnb.com/openAPI.html?apiID=searchCompanyList
 func (client *Client) CompanyListSearch(ctx context.Context, options ...ClientOptions) (*api_response.CompanySearch, error) {
 	searchResults := &api_response.CompanySearch{}
 	client.RequestBody.CompanySearch = &CompanySearchRequest{}
@@ -192,6 +268,21 @@ func (client *Client) CompanyListSearch(ctx context.Context, options ...ClientOp
 	return searchResults, nil
 }
 
+// Search Contact allows D&B Direct+ customers to search for individuals using several parameters.
+// This function will perfom both standard and premium search dependeing on the data passed in the
+// client options contact search request body. Refer to documentation for details.
+//
+// Parameters
+// - ctx
+// - options: allows configuring the search
+//
+// Returns
+// - ContactSearch: contact search results
+// - error: error if any
+//
+// Documentation
+// - Contact Search Standard: https://directplus.documentation.dnb.com/openAPI.html?apiID=searchContactsStandard
+// - Contact Search Premium: https://directplus.documentation.dnb.com/openAPI.html?apiID=searchContactsPremium
 func (client *Client) SearchContact(ctx context.Context, options ...ClientOptions) (*api_response.ContactSearch, error) {
 	searchResults := &api_response.ContactSearch{}
 	client.RequestBody.ContactSearch = &ContactSearchRequest{}
@@ -222,6 +313,19 @@ func (client *Client) SearchContact(ctx context.Context, options ...ClientOption
 	return searchResults, nil
 }
 
+// GetContactsByID will return a single contact from the D&B Direct+ API based on the contact ID
+//
+// Parameters
+// - ctx
+// - contactID:1 to 16 characters used to find entities by a unique ID assigned to the contact.
+// - options: allows configuring the search
+//
+// Returns
+// - ContactSearch: contact search results
+// - error: error if any
+//
+// Documentation
+// - https://directplus.documentation.dnb.com/openAPI.html?apiID=searchContactsGet
 func (client *Client) GetContactByID(ctx context.Context, contactID string, options ...ClientOptions) (*api_response.ContactSearch, error) {
 	searchResults := &api_response.ContactSearch{}
 
@@ -239,6 +343,18 @@ func (client *Client) GetContactByID(ctx context.Context, contactID string, opti
 	return client.getContact(ctx, reqURL)
 }
 
+// GetContactsByEmail will return a single contact from the D&B Direct+ API based on the contact email
+//
+// Parameters
+// - ctx
+// - email: 1 to 128 characters used to find entities by the contact's email address.
+//
+// Returns
+// - ContactSearch: contact search results
+// - error: error if any
+//
+// Documentation
+// - https://directplus.documentation.dnb.com/openAPI.html?apiID=searchContactsGet
 func (client *Client) GetContactByEmail(ctx context.Context, email string, options ...ClientOptions) (*api_response.ContactSearch, error) {
 	searchResults := &api_response.ContactSearch{}
 
@@ -256,6 +372,18 @@ func (client *Client) GetContactByEmail(ctx context.Context, email string, optio
 	return client.getContact(ctx, reqURL)
 }
 
+// GetContactsByDUNS will return a single contact from the D&B Direct+ API based on the contact DUNS
+//
+// Parameters
+// - ctx
+// - duns: D-U-N-S number to be used for search (mandatory when Searching by D-U-N-S, otherwise optional)
+//
+// Returns
+// - ContactSearch: contact search results
+// - error: error if any
+//
+// Documentation
+// - https://directplus.documentation.dnb.com/openAPI.html?apiID=searchContactsGetByDuns
 func (client *Client) GetcontactByDUNS(ctx context.Context, duns string, options ...ClientOptions) (*api_response.ContactSearch, error) {
 	searchResults := &api_response.ContactSearch{}
 
