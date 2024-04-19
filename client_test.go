@@ -2,11 +2,13 @@ package dnbclient_test
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"testing"
 
 	"github.com/h2non/gock"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/struki84/dnbclient"
 )
@@ -24,7 +26,7 @@ func TestGetToken(t *testing.T) {
 		gock.New(dnbclient.BaseURLV3).
 			Post(dnbclient.AuthURL).
 			Reply(http.StatusOK).
-			JSON(map[string]string{"token": "test_token"})
+			JSON(map[string]any{"access_token": "test_token", "token_type": "Bearer", "expires_in": 3600})
 
 		token, err := client.GetToken(context.Background())
 		assert.NoError(t, err)
@@ -47,6 +49,11 @@ func TestGetToken(t *testing.T) {
 		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
 	})
 
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file make sure the file is present and placed in root directory.")
+	}
+
 	if username := os.Getenv("DNB_USERNAME"); username == "" {
 		t.Skip("Skipping functional test because DNB_USERNAME is not set")
 		return
@@ -61,6 +68,7 @@ func TestGetToken(t *testing.T) {
 		token, err := client.GetToken(
 			context.Background(),
 			dnbclient.WithCredentials(os.Getenv("DNB_USERNAME"), os.Getenv("DNB_PASSWORD")),
+			dnbclient.WithBaseURL(dnbclient.BaseURLV3),
 		)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)

@@ -42,14 +42,14 @@ const (
 
 var (
 	ErrMissingAPIKey        = errors.New("api token is required")
-	ErrGetTokenFailed       = errors.New("get token failed with error")
-	ErrRequestFailed        = errors.New("http request failed with error")
-	ErrSearchCriteriaFailed = errors.New("search criteria failed with error")
-	ErrCompanyListFailed    = errors.New("company list search failed with error")
-	ErrTypeheadSearchFailed = errors.New("typehead search failed with error")
-	ErrContactSearchFailed  = errors.New("contact search failed with error")
-	ErrGetContactsFailed    = errors.New("get contacts failed with error")
+	ErrGetTokenFailed       = errors.New("get token failed")
+	ErrSearchCriteriaFailed = errors.New("search criteria failed")
+	ErrCompanyListFailed    = errors.New("company list search failed")
+	ErrTypeheadSearchFailed = errors.New("typehead search failed")
+	ErrContactSearchFailed  = errors.New("contact search failed")
+	ErrGetContactsFailed    = errors.New("get contacts failed")
 	ErrNoSearchResults      = errors.New("no search results found")
+	ErrRequestFailed        = errors.New("http request failed with error")
 )
 
 type Client struct {
@@ -104,18 +104,20 @@ func (client *Client) GetToken(ctx context.Context, options ...ClientOptions) (s
 
 	reqBytes, err := json.Marshal(reqData)
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrGetTokenFailed, err)
+		return "", fmt.Errorf("%w, %w", ErrGetTokenFailed, err)
 	}
 
 	reqURL := client.BaseURL + AuthURL
+
+	fmt.Println(reqURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewBuffer(reqBytes))
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrGetTokenFailed, err)
+		return "", fmt.Errorf("%w, %w", ErrGetTokenFailed, err)
 	}
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrGetTokenFailed, err)
+		return "", fmt.Errorf("%w, %w", ErrGetTokenFailed, err)
 	}
 
 	var reponseData struct {
@@ -153,23 +155,23 @@ func (client *Client) CriteriaSearch(ctx context.Context, options ...ClientOptio
 
 	reqBytes, err := json.Marshal(client.RequestBody.CompanySearch)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrSearchCriteriaFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrSearchCriteriaFailed, err)
 	}
 
 	reqURL := client.BaseURL + CriteriaSearchURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewBuffer(reqBytes))
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrSearchCriteriaFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrSearchCriteriaFailed, err)
 	}
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrSearchCriteriaFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrSearchCriteriaFailed, err)
 	}
 
 	err = json.Unmarshal(responseBody, searchResults)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrSearchCriteriaFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrSearchCriteriaFailed, err)
 	}
 
 	return searchResults, nil
@@ -199,7 +201,7 @@ func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, cou
 
 	reqURL, err := url.Parse(client.BaseURL + TypeheadSearchURL)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrTypeheadSearchFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrTypeheadSearchFailed, err)
 	}
 
 	params := reqURL.Query()
@@ -209,17 +211,17 @@ func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, cou
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURL.String(), nil)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrTypeheadSearchFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrTypeheadSearchFailed, err)
 	}
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrTypeheadSearchFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrTypeheadSearchFailed, err)
 	}
 
 	err = json.Unmarshal(responseBody, searchResults)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrTypeheadSearchFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrTypeheadSearchFailed, err)
 	}
 
 	return searchResults, nil
@@ -246,23 +248,23 @@ func (client *Client) CompanyListSearch(ctx context.Context, options ...ClientOp
 
 	reqBytes, err := json.Marshal(client.RequestBody.CompanySearch)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrCompanyListFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrCompanyListFailed, err)
 	}
 
 	reqURL := client.BaseURL + CompanyListURL
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewBuffer(reqBytes))
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrCompanyListFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrCompanyListFailed, err)
 	}
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrCompanyListFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrCompanyListFailed, err)
 	}
 
 	err = json.Unmarshal(responseBody, searchResults)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrCompanyListFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrCompanyListFailed, err)
 	}
 
 	return searchResults, nil
@@ -291,7 +293,7 @@ func (client *Client) SearchContact(ctx context.Context, options ...ClientOption
 
 	reqBytes, err := json.Marshal(client.RequestBody.ContactSearch)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrContactSearchFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrContactSearchFailed, err)
 	}
 
 	reqUrl := client.BaseURL + ContactSearchURL
@@ -333,7 +335,7 @@ func (client *Client) GetContactByID(ctx context.Context, contactID string, opti
 
 	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrGetContactsFailed, err)
 	}
 
 	params := reqURL.Query()
@@ -362,7 +364,7 @@ func (client *Client) GetContactByEmail(ctx context.Context, email string, optio
 
 	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrGetContactsFailed, err)
 	}
 
 	params := reqURL.Query()
@@ -391,7 +393,7 @@ func (client *Client) GetcontactByDUNS(ctx context.Context, duns string, options
 
 	reqURL, err := url.Parse(client.BaseURL + ContactSearchURL)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrGetContactsFailed, err)
 	}
 
 	params := reqURL.Query()
@@ -406,17 +408,17 @@ func (client *Client) getContact(ctx context.Context, reqURl *url.URL) (*api_res
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, reqURl.String(), nil)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrGetContactsFailed, err)
 	}
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrGetContactsFailed, err)
 	}
 
 	err = json.Unmarshal(responseBody, searchResults)
 	if err != nil {
-		return searchResults, fmt.Errorf("%w: %w", ErrGetContactsFailed, err)
+		return searchResults, fmt.Errorf("%w, %w", ErrGetContactsFailed, err)
 	}
 
 	return searchResults, nil
@@ -444,10 +446,10 @@ func (client *Client) runRequest(req *http.Request) ([]byte, error) {
 
 		err = json.Unmarshal(body, errorResponse)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %d", ErrRequestFailed, res.StatusCode)
+			return nil, fmt.Errorf("%w, %d", ErrRequestFailed, res.StatusCode)
 		}
 
-		return nil, fmt.Errorf("%w: %s", ErrRequestFailed, errorResponse.ErrorMessage)
+		return nil, fmt.Errorf("%w, %s", ErrRequestFailed, errorResponse.ErrorMessage)
 	}
 
 	return body, nil
