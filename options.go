@@ -15,6 +15,13 @@ func WithCredentials(username string, password string) ClientOptions {
 	}
 }
 
+func WithTokens(apiKey string, apiSecret string) ClientOptions {
+	return func(client *Client) {
+		client.ApiKey = apiKey
+		client.ApiSecret = apiSecret
+	}
+}
+
 func WithAPIKey(apiKey string) ClientOptions {
 	return func(client *Client) {
 		client.apiToken = apiKey

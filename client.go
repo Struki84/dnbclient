@@ -55,6 +55,8 @@ var (
 type Client struct {
 	username    string
 	password    string
+	ApiKey      string
+	ApiSecret   string
 	apiToken    string
 	options     []ClientOptions
 	BaseURL     string
@@ -99,7 +101,7 @@ func (client *Client) GetToken(ctx context.Context, options ...ClientOptions) (s
 
 	client.loadOptions(options...)
 
-	credentials := client.username + ":" + client.password
+	credentials := client.ApiKey + client.ApiSecret
 	client.apiToken = base64.StdEncoding.EncodeToString([]byte(credentials))
 
 	reqBytes, err := json.Marshal(reqData)
@@ -108,12 +110,14 @@ func (client *Client) GetToken(ctx context.Context, options ...ClientOptions) (s
 	}
 
 	reqURL := client.BaseURL + AuthURL
-
-	fmt.Println(reqURL)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewBuffer(reqBytes))
 	if err != nil {
 		return "", fmt.Errorf("%w, %w", ErrGetTokenFailed, err)
 	}
+
+	req.Header.Add("Authorization", "Basic <"+client.apiToken+">")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Accept", "application/json")
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
@@ -163,6 +167,9 @@ func (client *Client) CriteriaSearch(ctx context.Context, options ...ClientOptio
 	if err != nil {
 		return searchResults, fmt.Errorf("%w, %w", ErrSearchCriteriaFailed, err)
 	}
+
+	req.Header.Add("Authorization", "Bearer "+client.apiToken)
+	req.Header.Add("Content-Type", "application/json")
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
@@ -214,6 +221,9 @@ func (client *Client) TypeheadSearch(ctx context.Context, searchTerm string, cou
 		return searchResults, fmt.Errorf("%w, %w", ErrTypeheadSearchFailed, err)
 	}
 
+	req.Header.Add("Authorization", "Bearer "+client.apiToken)
+	req.Header.Add("Content-Type", "application/json")
+
 	responseBody, err := client.runRequest(req)
 	if err != nil {
 		return searchResults, fmt.Errorf("%w, %w", ErrTypeheadSearchFailed, err)
@@ -256,6 +266,9 @@ func (client *Client) CompanyListSearch(ctx context.Context, options ...ClientOp
 	if err != nil {
 		return searchResults, fmt.Errorf("%w, %w", ErrCompanyListFailed, err)
 	}
+
+	req.Header.Add("Authorization", "Bearer "+client.apiToken)
+	req.Header.Add("Content-Type", "application/json")
 
 	responseBody, err := client.runRequest(req)
 	if err != nil {
@@ -386,7 +399,7 @@ func (client *Client) GetContactByEmail(ctx context.Context, email string, optio
 //
 // Documentation
 // - https://directplus.documentation.dnb.com/openAPI.html?apiID=searchContactsGetByDuns
-func (client *Client) GetcontactByDUNS(ctx context.Context, duns string, options ...ClientOptions) (*api_response.ContactSearch, error) {
+func (client *Client) GetContactByDUNS(ctx context.Context, duns string, options ...ClientOptions) (*api_response.ContactSearch, error) {
 	searchResults := &api_response.ContactSearch{}
 
 	client.loadOptions(options...)
@@ -411,6 +424,9 @@ func (client *Client) getContact(ctx context.Context, reqURl *url.URL) (*api_res
 		return searchResults, fmt.Errorf("%w, %w", ErrGetContactsFailed, err)
 	}
 
+	req.Header.Add("Authorization", "Bearer "+client.apiToken)
+	req.Header.Add("Content-Type", "application/json")
+
 	responseBody, err := client.runRequest(req)
 	if err != nil {
 		return searchResults, fmt.Errorf("%w, %w", ErrGetContactsFailed, err)
@@ -425,9 +441,6 @@ func (client *Client) getContact(ctx context.Context, reqURl *url.URL) (*api_res
 }
 
 func (client *Client) runRequest(req *http.Request) ([]byte, error) {
-
-	req.Header.Add("Authorization", "Bearer "+client.apiToken)
-	req.Header.Add("Content-Type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -449,7 +462,13 @@ func (client *Client) runRequest(req *http.Request) ([]byte, error) {
 			return nil, fmt.Errorf("%w, %d", ErrRequestFailed, res.StatusCode)
 		}
 
-		return nil, fmt.Errorf("%w, %s", ErrRequestFailed, errorResponse.ErrorMessage)
+		if client.BaseURL == BaseURLV3 {
+			return nil, fmt.Errorf("%w, %s", ErrRequestFailed, errorResponse.ErrorDescription)
+		}
+
+		if client.BaseURL == BaseURLV1 {
+			return nil, fmt.Errorf("%w, %s", ErrRequestFailed, errorResponse.ErrorMessage)
+		}
 	}
 
 	return body, nil

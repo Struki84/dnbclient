@@ -20,7 +20,7 @@ func TestGetToken(t *testing.T) {
 		dnbclient.WithCredentials("test_username", "test_password"),
 	)
 
-	t.Run("Successful Get Token - unit test", func(t *testing.T) {
+	t.Run("Unit Test: Successful Get Token", func(t *testing.T) {
 		defer gock.Off()
 
 		gock.New(dnbclient.BaseURLV3).
@@ -35,7 +35,7 @@ func TestGetToken(t *testing.T) {
 		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
 	})
 
-	t.Run("Failed Get Token - unit test", func(t *testing.T) {
+	t.Run("Unit Test: Failed Get Token", func(t *testing.T) {
 		defer gock.Off()
 
 		gock.New(dnbclient.BaseURLV3).
@@ -73,4 +73,233 @@ func TestGetToken(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)
 	})
+}
+
+func TestCriteriaSearch(t *testing.T) {
+
+	client, _ := dnbclient.NewClient(
+		dnbclient.WithCredentials("test_username", "test_password"),
+	)
+
+	t.Run("Unit Test: Successful Criteria Search", func(t *testing.T) {
+
+		defer gock.Off()
+
+		gock.New(dnbclient.BaseURLV1).
+			Post(dnbclient.CriteriaSearchURL).
+			Reply(http.StatusOK).
+			JSON(map[string]any{"transactionDetail": map[string]string{"transactionID": "test_transactionID"}})
+
+		searchResults, err := client.CriteriaSearch(
+			context.Background(),
+			dnbclient.WithCompanySerchRequest(&dnbclient.CompanySearchRequest{
+				SearchTerm:     "test_search_term",
+				TradeStyleName: "test_trade_style_name",
+			}),
+		)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "test_transactionID", searchResults.TransactionDetail.TransactionID)
+
+		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
+	})
+
+	t.Run("Unit Test: Failed Criteria Search", func(t *testing.T) {
+
+		defer gock.Off()
+
+		gock.New(dnbclient.BaseURLV1).
+			Post(dnbclient.CriteriaSearchURL).
+			Reply(http.StatusUnauthorized).
+			JSON(map[string]string{"errorMessage": "invalid_request"})
+
+		_, err := client.CriteriaSearch(context.Background())
+
+		assert.Error(t, err)
+
+		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
+	})
+}
+
+func TestTypeheadSearch(t *testing.T) {
+
+	client, _ := dnbclient.NewClient()
+
+	t.Run("Unit Test: Successful Typehead Search", func(t *testing.T) {
+
+		defer gock.Off()
+
+		gock.New(dnbclient.BaseURLV1).
+			Post(dnbclient.TypeheadSearchURL).
+			Reply(http.StatusOK).
+			JSON(map[string]any{"transactionDetail": map[string]string{"transactionID": "test_transactionID"}})
+
+		searchResults, err := client.TypeheadSearch(
+			context.Background(),
+			"test_search",
+			"test_country",
+		)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "test_transactionID", searchResults.TransactionDetail.TransactionID)
+
+		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
+
+	})
+
+	t.Run("Unit Test: Failed Typehead Search", func(t *testing.T) {
+
+		defer gock.Off()
+
+		gock.New(dnbclient.BaseURLV1).
+			Post(dnbclient.TypeheadSearchURL).
+			Reply(http.StatusUnauthorized).
+			JSON(map[string]string{"errorMessage": "invalid_request"})
+
+		_, err := client.TypeheadSearch(
+			context.Background(),
+			"test_search",
+			"test_country",
+		)
+
+		assert.Error(t, err)
+
+		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
+	})
+}
+
+func TestCompanyListSearch(t *testing.T) {
+
+	client, _ := dnbclient.NewClient()
+
+	t.Run("Unit Test: Failed Company List Search", func(t *testing.T) {
+		defer gock.Off()
+
+		gock.New(dnbclient.BaseURLV1).
+			Post(dnbclient.CompanyListURL).
+			Reply(http.StatusOK).
+			JSON(map[string]any{"transactionDetail": map[string]string{"transactionID": "test_transactionID"}})
+
+		searchResults, err := client.CompanyListSearch(
+			context.Background(),
+			dnbclient.WithCompanySerchRequest(&dnbclient.CompanySearchRequest{
+				SearchTerm:     "test_search_term",
+				TradeStyleName: "test_trade_style_name",
+			}),
+		)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "test_transactionID", searchResults.TransactionDetail.TransactionID)
+
+		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
+	})
+
+	t.Run("Unit Test: Failed Company List Search", func(t *testing.T) {
+
+		defer gock.Off()
+
+		gock.New(dnbclient.BaseURLV1).
+			Post(dnbclient.CompanyListURL).
+			Reply(http.StatusUnauthorized).
+			JSON(map[string]string{"errorMessage": "invalid_request"})
+
+		_, err := client.CompanyListSearch(
+			context.Background(),
+			dnbclient.WithCompanySerchRequest(&dnbclient.CompanySearchRequest{
+				SearchTerm:     "test_search_term",
+				TradeStyleName: "test_trade_style_name",
+			}),
+		)
+
+		assert.Error(t, err)
+
+		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
+	})
+}
+
+func TestSearchContacts(t *testing.T) {
+
+	client, _ := dnbclient.NewClient()
+
+	t.Run("Unit Test: Successful Contact Search", func(t *testing.T) {
+
+		defer gock.Off()
+
+		gock.New(dnbclient.BaseURLV1).
+			Post(dnbclient.ContactSearchURL).
+			Reply(http.StatusOK).
+			JSON(map[string]any{"transactionDetail": map[string]string{"transactionID": "test_transactionID"}})
+
+		searchResults, err := client.SearchContact(
+			context.Background(),
+			dnbclient.WithContactSearchRequest(&dnbclient.ContactSearchRequest{
+				ContactEmail: "test_contact_email",
+			}),
+		)
+
+		assert.NoError(t, err)
+		assert.Equal(t, "test_transactionID", searchResults.TransactionDetail.TransactionID)
+
+		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
+	})
+
+	t.Run("Unit Test: Failed Contact Search", func(t *testing.T) {
+
+		defer gock.Off()
+
+		gock.New(dnbclient.BaseURLV1).
+			Post(dnbclient.ContactSearchURL).
+			Reply(http.StatusUnauthorized).
+			JSON(map[string]string{"errorMessage": "invalid_request"})
+
+		_, err := client.SearchContact(
+			context.Background(),
+			dnbclient.WithContactSearchRequest(&dnbclient.ContactSearchRequest{
+				ContactEmail: "test_contact_email",
+			}),
+		)
+
+		assert.Error(t, err)
+
+		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
+	})
+}
+
+func TestGetContactByDUNS(t *testing.T) {
+
+	client, _ := dnbclient.NewClient()
+
+	t.Run("Unit Test: Successful Get Contact By DUNS", func(t *testing.T) {
+
+		defer gock.Off()
+
+		gock.New(dnbclient.BaseURLV1).
+			Post(dnbclient.ContactSearchURL).
+			Reply(http.StatusOK).
+			JSON(map[string]any{"transactionDetail": map[string]string{"transactionID": "test_transactionID"}})
+
+		searchResults, err := client.GetContactByDUNS(context.Background(), "test_duns")
+
+		assert.NoError(t, err)
+
+		assert.Equal(t, "test_transactionID", searchResults.TransactionDetail.TransactionID)
+	})
+
+	t.Run("Unit Test: Failed Get Contact By DUNS", func(t *testing.T) {
+
+		defer gock.Off()
+
+		gock.New(dnbclient.BaseURLV1).
+			Post(dnbclient.ContactSearchURL).
+			Reply(http.StatusUnauthorized).
+			JSON(map[string]string{"errorMessage": "invalid_request"})
+
+		_, err := client.GetContactByDUNS(context.Background(), "test_duns")
+
+		assert.Error(t, err)
+
+		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
+
+	})
+
 }
