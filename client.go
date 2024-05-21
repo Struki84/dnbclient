@@ -202,7 +202,7 @@ func (client *Client) CriteriaSearch(ctx context.Context, options ...ClientOptio
 	return searchResults, nil
 }
 
-// Tyoehead Search enables users to quickly find company records without
+// Typehead Search enables users to quickly find company records without
 // having to type the entire company information in the search request.
 //
 // # Parameters

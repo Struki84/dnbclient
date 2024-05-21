@@ -129,7 +129,11 @@ func TestTypeheadSearch(t *testing.T) {
 		defer gock.Off()
 
 		gock.New(dnbclient.BaseURLV1).
-			Post(dnbclient.TypeheadSearchURL).
+			Get(dnbclient.TypeheadSearchURL).
+			MatchParams(map[string]string{
+				"searchTerm":           "test_search",
+				"countryISOAlpha2Code": "test_country",
+			}).
 			Reply(http.StatusOK).
 			JSON(map[string]any{"transactionDetail": map[string]string{"transactionID": "test_transactionID"}})
 
@@ -151,7 +155,11 @@ func TestTypeheadSearch(t *testing.T) {
 		defer gock.Off()
 
 		gock.New(dnbclient.BaseURLV1).
-			Post(dnbclient.TypeheadSearchURL).
+			Get(dnbclient.TypeheadSearchURL).
+			MatchParams(map[string]string{
+				"searchTerm":           "test_search",
+				"countryISOAlpha2Code": "test_country",
+			}).
 			Reply(http.StatusUnauthorized).
 			JSON(map[string]string{"errorMessage": "invalid_request"})
 
@@ -273,7 +281,8 @@ func TestGetContactByDUNS(t *testing.T) {
 		defer gock.Off()
 
 		gock.New(dnbclient.BaseURLV1).
-			Post(dnbclient.ContactSearchURL).
+			Get(dnbclient.ContactSearchURL).
+			MatchParam("duns", "test_duns").
 			Reply(http.StatusOK).
 			JSON(map[string]any{"transactionDetail": map[string]string{"transactionID": "test_transactionID"}})
 
@@ -289,7 +298,8 @@ func TestGetContactByDUNS(t *testing.T) {
 		defer gock.Off()
 
 		gock.New(dnbclient.BaseURLV1).
-			Post(dnbclient.ContactSearchURL).
+			Get(dnbclient.ContactSearchURL).
+			MatchParam("duns", "test_duns").
 			Reply(http.StatusUnauthorized).
 			JSON(map[string]string{"errorMessage": "invalid_request"})
 
