@@ -69,6 +69,11 @@ func TestGetToken(t *testing.T) {
 			dnbclient.WithBaseURL(dnbclient.BaseURLV3),
 			dnbclient.WithTokens(os.Getenv("API_KEY"), os.Getenv("API_SECRET")),
 		)
+
+		err = saveToken(token)
+		if err != nil {
+			t.Error(err)
+		}
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)
 	})
@@ -117,6 +122,32 @@ func TestCriteriaSearch(t *testing.T) {
 		assert.Error(t, err)
 
 		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
+	})
+
+	t.Run("Criteria Search - functional test", func(t *testing.T) {
+		err := godotenv.Load()
+		if err != nil {
+			fmt.Println("Error loading .env file make sure the file is present and placed in root directory.")
+		}
+
+		if apiToken := os.Getenv("API_TOKEN"); apiToken == "" {
+			t.Skip("Skipping functional test because API_TOKEN is not set")
+			return
+		}
+
+		searchResults, err := client.CriteriaSearch(
+			context.Background(),
+			dnbclient.WithAPIToken(os.Getenv("API_TOKEN")),
+			dnbclient.WithCompanySerchRequest(&dnbclient.CompanySearchRequest{
+				TradeStyleName: "Apple",
+			}),
+		)
+
+		fmt.Println("Error: ", err)
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, searchResults.TransactionDetail.TransactionID)
+
 	})
 }
 
@@ -173,6 +204,29 @@ func TestTypeheadSearch(t *testing.T) {
 
 		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
 	})
+
+	t.Run("Typehead Search - functional test", func(t *testing.T) {
+		err := godotenv.Load()
+		if err != nil {
+			fmt.Println("Error loading .env file make sure the file is present and placed in root directory.")
+		}
+
+		if apiToken := os.Getenv("API_TOKEN"); apiToken == "" {
+			t.Skip("Skipping functional test because API_TOKEN is not set")
+			return
+		}
+
+		searchResults, err := client.TypeheadSearch(
+			context.Background(),
+			"Apple",
+			"US",
+			dnbclient.WithAPIToken(os.Getenv("API_TOKEN")),
+		)
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, searchResults.TransactionDetail.TransactionID)
+
+	})
 }
 
 func TestCompanyListSearch(t *testing.T) {
@@ -222,6 +276,30 @@ func TestCompanyListSearch(t *testing.T) {
 
 		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
 	})
+
+	t.Run("Company List Search - functional test", func(t *testing.T) {
+		err := godotenv.Load()
+		if err != nil {
+			fmt.Println("Error loading .env file make sure the file is present and placed in root directory.")
+		}
+
+		if apiToken := os.Getenv("API_TOKEN"); apiToken == "" {
+			t.Skip("Skipping functional test because API_TOKEN is not set")
+			return
+		}
+
+		searchResults, err := client.CompanyListSearch(
+			context.Background(),
+			dnbclient.WithCompanySerchRequest(&dnbclient.CompanySearchRequest{
+				TradeStyleName: "Apple",
+			}),
+			dnbclient.WithAPIToken(os.Getenv("API_TOKEN")),
+		)
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, searchResults.TransactionDetail.TransactionID)
+
+	})
 }
 
 func TestSearchContacts(t *testing.T) {
@@ -270,6 +348,29 @@ func TestSearchContacts(t *testing.T) {
 
 		assert.True(t, gock.IsDone(), "Expected HTTP requests not made")
 	})
+
+	t.Run("Contact Search - functional test", func(t *testing.T) {
+		err := godotenv.Load()
+		if err != nil {
+			fmt.Println("Error loading .env file make sure the file is present and placed in root directory.")
+		}
+
+		if apiToken := os.Getenv("API_TOKEN"); apiToken == "" {
+			t.Skip("Skipping functional test because API_TOKEN is not set")
+			return
+		}
+
+		searchResults, err := client.SearchContact(
+			context.Background(),
+			dnbclient.WithContactSearchRequest(&dnbclient.ContactSearchRequest{
+				ContactEmail: "mario.tica@mar-mar.hr",
+			}),
+			dnbclient.WithAPIToken(os.Getenv("API_TOKEN")),
+		)
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, searchResults.TransactionDetail.TransactionID)
+	})
 }
 
 func TestGetContactByDUNS(t *testing.T) {
@@ -311,4 +412,38 @@ func TestGetContactByDUNS(t *testing.T) {
 
 	})
 
+	t.Run("Get Contact By DUNS - functional test", func(t *testing.T) {
+
+		err := godotenv.Load()
+		if err != nil {
+			fmt.Println("Error loading .env file make sure the file is present and placed in root directory.")
+		}
+
+		if apiToken := os.Getenv("API_TOKEN"); apiToken == "" {
+			t.Skip("Skipping functional test because API_TOKEN is not set")
+			return
+		}
+
+		searchResults, err := client.GetContactByDUNS(context.Background(), "000001591", dnbclient.WithAPIToken(os.Getenv("API_TOKEN")))
+
+		assert.NoError(t, err)
+		assert.NotEmpty(t, searchResults.TransactionDetail.TransactionID)
+	})
+
+}
+
+func saveToken(apiToken string) error {
+	f, err := os.OpenFile(".env", os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	newEnvVar := "API_TOKEN=" + apiToken + "\n"
+	if _, err = f.WriteString(newEnvVar); err != nil {
+		return err
+	}
+
+	return nil
 }

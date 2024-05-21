@@ -22,9 +22,9 @@ func WithTokens(apiKey string, apiSecret string) ClientOptions {
 	}
 }
 
-func WithAPIKey(apiKey string) ClientOptions {
+func WithAPIToken(apiToken string) ClientOptions {
 	return func(client *Client) {
-		client.apiToken = apiKey
+		client.apiToken = apiToken
 	}
 }
 

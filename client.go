@@ -189,6 +189,7 @@ func (client *Client) CriteriaSearch(ctx context.Context, options ...ClientOptio
 	req.Header.Add("Authorization", "Bearer "+client.apiToken)
 	req.Header.Add("Content-Type", "application/json")
 
+	fmt.Println("Request URL: ", req.URL)
 	responseBody, err := client.runRequest(req)
 	if err != nil {
 		return searchResults, fmt.Errorf("%w, %w", ErrSearchCriteriaFailed, err)

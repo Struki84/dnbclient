@@ -34,30 +34,30 @@ type CompanySearchRequest struct {
 	BusinessEntityType      []string `json:"businessEntityType,omitempty"`
 	FamilytreeRolesPlayed   []string `json:"familytreeRolesPlayed,omitempty"`
 	UsSicv4                 []string `json:"usSicv4,omitempty"`
-	LocationRadius          struct {
-		Lat    float64 `json:"lat"`
-		Lng    float64 `json:"lon"`
-		Radius float64 `json:"radius"`
-		Unit   string  `json:"unit"`
+	LocationRadius          *struct {
+		Lat    float64 `json:"lat,omitempty"`
+		Lng    float64 `json:"lon,omitempty"`
+		Radius float64 `json:"radius,omitempty"`
+		Unit   string  `json:"unit,omitempty"`
 	} `json:"locationRadius,omitempty"`
 
-	NumberOfEmployees struct {
+	NumberOfEmployees *struct {
 		InformationScope int `json:"informationScope,omitempty"`
 		MaximumValue     int `json:"maximumValue,omitempty"`
 		MinimumValue     int `json:"minimumValue,omitempty"`
 	} `json:"numberOfEmployees,omitempty"`
 
-	YearlyRevenue struct {
+	YearlyRevenue *struct {
 		MaximumValue int `json:"maximumValue,omitempty"`
 		MinimumValue int `json:"minimumValue,omitempty"`
-	}
+	} `json:"yearlyRevenue,omitempty"`
 
-	GlobalUltimateFamilyTreeMembersCount struct {
+	GlobalUltimateramilyTreeMembersCount *struct {
 		MaximumValue int `json:"maximumValue,omitempty"`
 		MinimumValue int `json:"minimumValue,omitempty"`
 	} `json:"globalUltimateFamilyTreeMembersCount,omitempty"`
 
-	IndustryCodes []struct {
+	IndustryCodes []*struct {
 		TypeDnbCode string   `json:"typeDnbCode,omitempty"`
 		Description string   `json:"description,omitempty"`
 		Code        []string `json:"code,omitempty"`
@@ -87,26 +87,26 @@ type TypeheadSearchRequest struct {
 
 // Contact Search Request
 type ContactSearchRequest struct {
-	ContactID            string         `json:"contactID,omitempty"`
-	ContactEmail         string         `json:"contactEmail,omitempty"`
-	GivenName            string         `json:"givenName,omitempty"`
-	FamilyName           string         `json:"familyName,omitempty"`
-	JobTitles            []string       `json:"jobTitles,omitempty"`
-	Duns                 string         `json:"duns,omitempty"`
-	PrimaryName          string         `json:"primaryName,omitempty"`
-	AddressLocality      string         `json:"addressLocality,omitempty"`
-	AddressRegion        string         `json:"addressRegion,omitempty"`
-	PostalCode           string         `json:"postalCode,omitempty"`
-	CountryISOAlpha2Code string         `json:"countryISOAlpha2Code,omitempty"`
-	UsSicV4              []string       `json:"usSicV4,omitempty"`
-	MrcCode              []string       `json:"mrcCode,omitempty"`
-	View                 string         `json:"view,omitempty"`
-	HasDirectDial        bool           `json:"hasDirectDial,omitempty"`
-	IndustryCodes        []IndustryCode `json:"industryCodes,omitempty"`
-	ReturnNavigators     bool           `json:"returnNavigators,omitempty"`
-	PageNumber           int            `json:"pageNumber,omitempty"`
-	PageSize             int            `json:"pageSize,omitempty"`
-	Sort                 []SortItem     `json:"sort,omitempty"`
+	ContactID            string          `json:"contactID,omitempty"`
+	ContactEmail         string          `json:"contactEmail,omitempty"`
+	GivenName            string          `json:"givenName,omitempty"`
+	FamilyName           string          `json:"familyName,omitempty"`
+	JobTitles            []string        `json:"jobTitles,omitempty"`
+	Duns                 string          `json:"duns,omitempty"`
+	PrimaryName          string          `json:"primaryName,omitempty"`
+	AddressLocality      string          `json:"addressLocality,omitempty"`
+	AddressRegion        string          `json:"addressRegion,omitempty"`
+	PostalCode           string          `json:"postalCode,omitempty"`
+	CountryISOAlpha2Code string          `json:"countryISOAlpha2Code,omitempty"`
+	UsSicV4              []string        `json:"usSicV4,omitempty"`
+	MrcCode              []string        `json:"mrcCode,omitempty"`
+	View                 string          `json:"view,omitempty"`
+	HasDirectDial        bool            `json:"hasDirectDial,omitempty"`
+	IndustryCodes        []*IndustryCode `json:"industryCodes,omitempty"`
+	ReturnNavigators     bool            `json:"returnNavigators,omitempty"`
+	PageNumber           int             `json:"pageNumber,omitempty"`
+	PageSize             int             `json:"pageSize,omitempty"`
+	Sort                 []*SortItem     `json:"sort,omitempty"`
 }
 
 type IndustryCode struct {
