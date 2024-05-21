@@ -17,7 +17,6 @@ func TestGetToken(t *testing.T) {
 
 	client, _ := dnbclient.NewClient(
 		dnbclient.WithBaseURL(dnbclient.BaseURLV3),
-		dnbclient.WithCredentials("test_username", "test_password"),
 	)
 
 	t.Run("Unit Test: Successful Get Token", func(t *testing.T) {
@@ -54,21 +53,21 @@ func TestGetToken(t *testing.T) {
 		fmt.Println("Error loading .env file make sure the file is present and placed in root directory.")
 	}
 
-	if username := os.Getenv("DNB_USERNAME"); username == "" {
-		t.Skip("Skipping functional test because DNB_USERNAME is not set")
+	if apiSecret := os.Getenv("API_SECRET"); apiSecret == "" {
+		t.Skip("Skipping functional test because API_SECRET is not set")
 		return
 	}
 
-	if password := os.Getenv("DNB_PASSWORD"); password == "" {
-		t.Skip("Skipping functional test because DNB_PASSWORD is not set")
+	if apiKey := os.Getenv("API_KEY"); apiKey == "" {
+		t.Skip("Skipping functional test because API_KEY is not set")
 		return
 	}
 
 	t.Run("Get Token - functional test", func(t *testing.T) {
 		token, err := client.GetToken(
 			context.Background(),
-			dnbclient.WithCredentials(os.Getenv("DNB_USERNAME"), os.Getenv("DNB_PASSWORD")),
 			dnbclient.WithBaseURL(dnbclient.BaseURLV3),
+			dnbclient.WithTokens(os.Getenv("API_KEY"), os.Getenv("API_SECRET")),
 		)
 		assert.NoError(t, err)
 		assert.NotEmpty(t, token)

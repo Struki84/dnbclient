@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/struki84/dnbclient/api_response"
 )
@@ -100,28 +101,34 @@ func NewClient(options ...ClientOptions) (*Client, error) {
 //
 // - https://directplus.documentation.dnb.com/openAPI.html?apiID=authenticationV3
 func (client *Client) GetToken(ctx context.Context, options ...ClientOptions) (string, error) {
-	var reqData struct {
-		GrantType string `json:"grant_type"`
-	}
-	reqData.GrantType = "client_credentials"
-
 	client.loadOptions(options...)
 
-	credentials := client.ApiKey + client.ApiSecret
+	credentials := client.ApiKey + ":" + client.ApiSecret
 	client.apiToken = base64.StdEncoding.EncodeToString([]byte(credentials))
 
-	reqBytes, err := json.Marshal(reqData)
-	if err != nil {
-		return "", fmt.Errorf("%w, %w", ErrGetTokenFailed, err)
-	}
+	formData := url.Values{}
+	formData.Set("grant_type", "client_credentials")
+
+	reqBody := formData.Encode()
+
+	// var reqData struct {
+	// 	GrantType string `json:"grant_type"`
+	// }
+	//
+	// reqData.GrantType = "client_credentials"
+	//
+	// reqBytes, err := json.Marshal(reqData)
+	// if err != nil {
+	// 	return "", fmt.Errorf("%w, %w", ErrGetTokenFailed, err)
+	// }
 
 	reqURL := client.BaseURL + AuthURL
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, bytes.NewBuffer(reqBytes))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, reqURL, strings.NewReader(reqBody))
 	if err != nil {
 		return "", fmt.Errorf("%w, %w", ErrGetTokenFailed, err)
 	}
 
-	req.Header.Add("Authorization", "Basic <"+client.apiToken+">")
+	req.Header.Add("Authorization", "Basic "+client.apiToken)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Accept", "application/json")
 
